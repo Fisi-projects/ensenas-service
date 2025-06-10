@@ -1,11 +1,20 @@
 use actix_cors::Cors;
-use actix_web::{App, HttpServer};
+use actix_web::{web::Data, App, HttpServer};
 use dotenvy::dotenv;
+use firebase_auth::FirebaseAuth;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
+
+    // Enviroment variables
+    let firebase_project_id = std::env::var("FIREBASE_PROJECT_ID")
+        .expect("FIREBASE_PROJECT_ID environment variable is required");
+
+    // Firebase auth
+    let firebase_auth = FirebaseAuth::new(&firebase_project_id).await;
+    let app_data = Data::new(firebase_auth);
 
     let _jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| {
         println!("Warning: JWT_SECRET not set, using default secret");
@@ -30,6 +39,7 @@ async fn main() -> std::io::Result<()> {
             // .app_data(db_pool.clone())
             // .app_data(auth_service.clone())
             .wrap(actix_web::middleware::Logger::default())
+            .app_data(app_data.clone())
             .wrap(
                 Cors::default()
                     .allow_any_origin()
