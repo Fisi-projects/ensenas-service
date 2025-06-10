@@ -65,15 +65,13 @@ fi
 echo "Building service..."
 podman build -t ensenas-service .
 
-# Run ingenius-service with --replace
-echo "Running new ingenius-service container..."
+# Run ensenas-service with --replace
+echo "Running new ensenas-service container..."
 podman run -d --replace \
     --pod ensenas-pod \
     --name ensenas-service \
     --restart unless-stopped \
-    -e DATABASE_URL=postgres://postgres:postgres@localhost:5432/ensenas \
-    -e RUST_BACKTRACE=full \
-    -e RUST_LOG=debug \
+    --env-file .env \
     ensenas-service
 
 # Follow the logs with timeout
