@@ -14,7 +14,7 @@ if not ($"ensenas-network" in (podman network ls --format json | from json | get
 # Check if the pod exists
 if not ($"ensenas-pod" in (podman pod ls --format json | from json | get Name)) {
     print "Creating pod..."
-    podman pod create --name ensenas-pod --network ensenas-network --share net --publish 8080:8080 --publish 5435:5432
+    podman pod create --name ensenas-pod --network ensenas-network --share net --publish 5001:8080 --publish 5435:5432
 } else {
     print "Pod already exists, skipping creation."
 }

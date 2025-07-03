@@ -15,7 +15,7 @@ if ! podman pod exists ensenas-pod; then
         --name ensenas-pod \
         --network ensenas-network \
         --share net \
-        --publish 8080:8080 \
+        --publish 5001:8080 \
         --publish 5435:5432
 else
     echo "Pod already exists, skipping creation."
