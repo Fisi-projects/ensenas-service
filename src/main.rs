@@ -1,7 +1,13 @@
 use actix_cors::Cors;
-use actix_web::{web::Data, App, HttpServer};
+use actix_web::{
+    web::{self, Data},
+    App, HttpServer,
+};
+use db::establish_connection;
 use dotenvy::dotenv;
 use firebase_auth::FirebaseAuth;
+
+mod db;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -24,8 +30,8 @@ async fn main() -> std::io::Result<()> {
     println!("Starting application...");
 
     // Establish database connection
-    // let db = establish_connection().await;
-    // let db_pool = web::Data::new(db.clone());
+    let db = establish_connection().await;
+    let db_pool = web::Data::new(db.clone());
 
     // let auth_service = web::Data::new(auth::services::auth_service::AuthService::new(
     //     db.clone(),
@@ -36,7 +42,7 @@ async fn main() -> std::io::Result<()> {
 
     let server = HttpServer::new(move || {
         App::new()
-            // .app_data(db_pool.clone())
+            .app_data(db_pool.clone())
             // .app_data(auth_service.clone())
             .wrap(actix_web::middleware::Logger::default())
             .app_data(app_data.clone())
@@ -58,7 +64,7 @@ async fn main() -> std::io::Result<()> {
     let server = match server {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("Failed to bind to address: {}", e);
+            eprintln!("Failed to bind to address: {e}");
             return Err(e);
         }
     };
@@ -71,7 +77,7 @@ async fn main() -> std::io::Result<()> {
             Ok(())
         }
         Err(e) => {
-            eprintln!("Server error: {}", e);
+            eprintln!("Server error: {e}");
             Err(e)
         }
     }
