@@ -8,6 +8,19 @@ use dotenvy::dotenv;
 use firebase_auth::FirebaseAuth;
 
 mod db;
+mod user;
+mod utils;
+
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    // Protected routes (require JWT authentication)
+    cfg.service(
+        web::scope("/api")
+            // .wrap(auth::middleware::auth_middleware::AuthMiddleware::new(
+            //     std::env::var("JWT_SECRET").unwrap_or_else(|_| "your_secret_key".to_string()),
+            // ))
+            .service(web::scope("/user").configure(user::routes::config)),
+    );
+}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
