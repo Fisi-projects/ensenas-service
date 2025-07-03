@@ -22,6 +22,9 @@ impl UserService {
                 email: user.email,
                 level: user.level,
                 streak: user.streak,
+                experience: user.experience,
+                last_experience_at: user.last_experience_at,
+                timezone: user.timezone,
             })),
             None => Ok(None),
         }
@@ -37,6 +40,9 @@ impl UserService {
                 email: user.email,
                 level: user.level,
                 streak: user.streak,
+                experience: user.experience,
+                last_experience_at: user.last_experience_at,
+                timezone: user.timezone,
             })
             .collect();
 
