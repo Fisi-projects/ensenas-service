@@ -39,6 +39,7 @@ pub async fn get_all_users(db: web::Data<DatabaseConnection>) -> impl Responder 
 }
 
 pub async fn create_user(db: web::Data<DatabaseConnection>, user: FirebaseUser) -> impl Responder {
+    info!("Creating user");
     let db = db.get_ref();
 
     match UserService::create_user_from_token(db, &user).await {

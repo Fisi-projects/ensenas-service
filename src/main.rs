@@ -69,7 +69,7 @@ async fn main() -> std::io::Result<()> {
                     ])
                     .max_age(3600),
             )
-        // .configure(configure)
+            .configure(configure)
     })
     .bind(("0.0.0.0", 8080));
 
