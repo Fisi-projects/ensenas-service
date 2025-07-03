@@ -10,6 +10,7 @@ pub struct Model {
     pub email: String,
     pub streak: i32,
     pub level: i32,
+    pub experience: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

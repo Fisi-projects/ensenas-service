@@ -10,6 +10,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
     .service(
         web::resource("/{id}")
             .route(web::get().to(handlers::get_user))
-            .route(web::delete().to(handlers::delete_user)),
+            .route(web::delete().to(handlers::delete_user))
+            .route(web::post().to(handlers::add_experience)),
     );
 }

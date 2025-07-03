@@ -3,7 +3,7 @@ use firebase_auth::FirebaseUser;
 use log::{error, info};
 use sea_orm::DatabaseConnection;
 
-use crate::user::services::UserService;
+use crate::user::{dtos::AddExperiencePayload, services::UserService};
 
 pub async fn get_user(db: web::Data<DatabaseConnection>, id: web::Path<String>) -> impl Responder {
     let user_id = id.into_inner();
@@ -75,6 +75,22 @@ pub async fn delete_user(
         Err(e) => {
             error!("Failed to delete user with id: {user_id:?}: {e:?}");
             HttpResponse::InternalServerError().body("Internal server error")
+        }
+    }
+}
+
+pub async fn add_experience(
+    db: web::Data<DatabaseConnection>,
+    user_id: web::Path<String>,
+    payload: web::Json<AddExperiencePayload>,
+) -> impl Responder {
+    let db = db.get_ref();
+
+    match UserService::add_experience(db, &user_id, payload.gained_exp).await {
+        Ok(updated_user) => HttpResponse::Ok().json(updated_user),
+        Err(e) => {
+            eprintln!("Failed to add experience: {e}");
+            HttpResponse::InternalServerError().body("Failed to add experience")
         }
     }
 }

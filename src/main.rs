@@ -9,7 +9,6 @@ use firebase_auth::FirebaseAuth;
 
 mod db;
 mod user;
-mod utils;
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
     // Protected routes (require JWT authentication)
