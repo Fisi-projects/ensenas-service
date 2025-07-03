@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use sea_orm::entity::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -11,6 +12,8 @@ pub struct Model {
     pub streak: i32,
     pub level: i32,
     pub experience: i32,
+    pub last_experience_at: Option<DateTime<Utc>>,
+    pub timezone: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

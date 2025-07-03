@@ -1,5 +1,7 @@
 use crate::user::dtos::UserResponse;
 use anyhow::{Context, Result};
+use chrono::{DateTime, Utc};
+use chrono_tz::Tz;
 use entity::user::{self, Entity};
 use firebase_auth::FirebaseUser;
 use sea_orm::{ActiveModelTrait, ActiveValue, DatabaseConnection, DbErr, EntityTrait, Set, Value};
@@ -52,6 +54,8 @@ impl UserService {
             level: Set(1),
             streak: Set(0),
             experience: Set(0),
+            last_experience_at: Set(None),
+            timezone: Set("UTC".to_string()),
         };
 
         let inserted = new_user
@@ -77,6 +81,10 @@ impl UserService {
             .await?
             .ok_or_else(|| DbErr::Custom(format!("User not found: {user_id}")))?;
 
+        let user_streak = user.streak;
+        let user_timezone = user.timezone.clone();
+        let user_last_experience_at = user.last_experience_at;
+
         let mut active_user: user::ActiveModel = user.into();
 
         let current_level = Self::unwrap_active_value(&active_user.level, 1);
@@ -86,6 +94,15 @@ impl UserService {
 
         active_user.level = Set(new_level);
         active_user.experience = Set(new_exp);
+
+        let tz: Tz = user_timezone.parse().unwrap_or(chrono_tz::America::Lima);
+        let now = Utc::now();
+
+        if Self::is_new_day(user_last_experience_at, now, tz) {
+            active_user.streak = Set(user_streak + 1);
+        }
+
+        active_user.last_experience_at = Set(Some(now));
 
         active_user.update(db).await
     }
@@ -114,5 +131,16 @@ impl UserService {
         }
 
         (level, exp)
+    }
+
+    fn is_new_day(last_time: Option<DateTime<Utc>>, now: DateTime<Utc>, tz: Tz) -> bool {
+        match last_time {
+            Some(last) => {
+                let last_local = last.with_timezone(&tz).date_naive();
+                let now_local = now.with_timezone(&tz).date_naive();
+                now_local > last_local
+            }
+            None => true,
+        }
     }
 }
