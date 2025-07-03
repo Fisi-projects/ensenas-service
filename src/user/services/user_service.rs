@@ -1,10 +1,7 @@
-use crate::{
-    user::dtos::{FirebaseClaims, UserResponse},
-    utils::verify_token,
-};
-use actix_web::HttpRequest;
+use crate::user::dtos::UserResponse;
 use anyhow::{Context, Result};
 use entity::user::{self, Entity};
+use firebase_auth::FirebaseUser;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, DbErr, EntityTrait, Set};
 
 pub struct UserService;
@@ -46,39 +43,22 @@ impl UserService {
 
     pub async fn create_user_from_token(
         db: &DatabaseConnection,
-        req: &HttpRequest,
+        user: &FirebaseUser,
     ) -> Result<user::Model> {
-        // Extract token from Authorization header
-        let token = req
-            .headers()
-            .get("Authorization")
-            .context("Missing Authorization header")?
-            .to_str()
-            .context("Invalid Authorization header format")?
-            .strip_prefix("Bearer ")
-            .context("Authorization header must start with 'Bearer '")?;
-
-        // Verify token and extract claims
-        let claims: FirebaseClaims = verify_token(token)
-            .await
-            .context("Failed to verify Firebase token")?;
-
-        // Create new user model
         let new_user = user::ActiveModel {
-            id: Set(claims.uid),
-            name: Set(claims.name),
-            email: Set(claims.email),
+            id: Set(user.user_id.clone()),
+            name: Set(user.name.clone().unwrap_or_default()),
+            email: Set(user.email.clone().unwrap_or_default()),
             level: Set(1),
             streak: Set(0),
         };
 
-        // Insert into DB
-        let inserted_user = new_user
+        let inserted = new_user
             .insert(db)
             .await
             .context("Failed to insert user into database")?;
 
-        Ok(inserted_user)
+        Ok(inserted)
     }
 
     pub async fn delete_user(db: &DatabaseConnection, user_id: &str) -> Result<(), DbErr> {
