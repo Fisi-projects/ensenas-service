@@ -1,5 +1,5 @@
 # Use Rust official image with musl support
-FROM rust:1.87.0-alpine3.22 as builder
+FROM rust:1.88.0-alpine3.22 as builder
 
 # Install required dependencies for building
 RUN apk add --no-cache musl-dev pkgconf perl make
@@ -9,8 +9,8 @@ WORKDIR /app
 
 # First: copy Cargo.toml files to cache dependencies
 COPY Cargo.toml Cargo.lock ./
-# COPY entity/Cargo.toml entity/
-# COPY entity/src entity/src/
+COPY entity/Cargo.toml entity/
+COPY entity/src entity/src/
 
 # Create a dummy main.rs that references entity
 RUN mkdir src && \
@@ -27,7 +27,7 @@ RUN touch src/main.rs && \
     cargo build --release --target x86_64-unknown-linux-musl
 
 # ---- Final Stage ----
-FROM alpine:latest
+FROM alpine:3.22.0
 
 # Install necessary runtime dependencies and debugging tools
 RUN apk add --no-cache \
